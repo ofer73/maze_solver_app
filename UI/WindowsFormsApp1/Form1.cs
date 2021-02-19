@@ -23,16 +23,18 @@ namespace WindowsFormsApp1
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void uploadButtonClick(object sender, EventArgs e)
         {
             try
             {
                 OpenFileDialog dialog = new OpenFileDialog();
-                dialog.Filter = "jpg files (*.jpg|*.jpg| PNG files |*.png| All Files(*.*)|*.*";
+                dialog.Filter = "jpg files (*.jpg)|*.jpg|jpeg files (*.jpeg)|*.jpeg| PNG files |*.png| All Files(*.*)|*.*";
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK){
                     var imageLocation = dialog.FileName;
                     Image1.ImageLocation = imageLocation;
+                    startVal.Text = "";
+                    endVal.Text = "";
                 }
             }
             catch
@@ -48,7 +50,7 @@ namespace WindowsFormsApp1
                 var b = Image1;
                 int x = b.Width * e.X / Image1.Width;
                 int y = b.Height * e.Y / Image1.Height;
-                var Size = getNewImageSIze();
+                var Size = getNewImageSize();
                 x -= ((Image1.Width - Size.Width) / 2); // decrease the gap between imagebox and the actual image
                 y -= ((Image1.Height - Size.Height) / 2);
 
@@ -81,7 +83,7 @@ namespace WindowsFormsApp1
                 var filppedStart = string.Join(",",start.Split(',').Reverse());
                 var filppedEnd = string.Join(",", end.Split(',').Reverse());
                 var imagePath = Image1.ImageLocation;
-                var imageNewSize = getNewImageSIze();
+                var imageNewSize = getNewImageSize();
                 var sizeParam = $"{imageNewSize.Height},{imageNewSize.Width}";
 
                 var cmds = new List<string> 
@@ -109,12 +111,12 @@ namespace WindowsFormsApp1
                 MessageBox.Show("no image cuurently uploade");
             else
             {
-                Size imageSize = getNewImageSIze();
+                Size imageSize = getNewImageSize();
                 MessageBox.Show($"{imageSize}");
             }
         }
 
-        private Size getNewImageSIze() // get the size of the actual image on the picture box (zoom mode maintains ratio of original image)
+        private Size getNewImageSize() // get the size of the actual image on the picture box (zoom mode maintains ratio of original image)
         {
             var img = Image1.Image;
             var wfactor = (double)img.Width / Image1.Width;
@@ -163,6 +165,15 @@ namespace WindowsFormsApp1
         private void label2_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void sizeTest_Click(object sender, EventArgs e)
+        {
+            if (Image1.Image != null)
+            {
+                var size = getNewImageSize();
+                MessageBox.Show($"Height: {size.Height} Width: {size.Width}");
+            }
         }
     }
 }

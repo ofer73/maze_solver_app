@@ -4,13 +4,14 @@ import matplotlib.pyplot as plt
 import queue
 import os
 import sys
+from PIL import Image
 
 
 class Pixel:
-    ds = [6, 5, 4, 3, 2, 1]
-    d = 5
+    ds = [3, 2, 1]
+    d = 3
     # draw_line_size = {1: 2, 2: 3, 3: 3, 4: 3, 5: 4, 6: 4}
-    draw_line_size = {1: 2, 2: 4, 3: 6, 4: 8, 5: 10, 6: 12}
+    draw_line_size = {1: 2, 2: 3, 3: 3}
 
     def __init__(self, X, Y, visited, prev):
         self.X = X
@@ -35,12 +36,14 @@ def parse_params(corrds):
     return (x1, y1)
 
 
-def save_image(img, maze_name):
+def display_image(img, maze_name):
     curr_dir = os.getcwd()
-    print(curr_dir)
     os.chdir(f"{curr_dir}\\mazes")
     filename = f'{maze_name}_Solved.jpg'
     cv.imwrite(filename, img)
+    display_image = Image.open(filename)
+    display_image.show()
+    os.remove(filename)
 
 
 def proccess_params(args):
@@ -370,8 +373,10 @@ if __name__ == "__main__":
 
     draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
 
-    plt.imshow(original_colored_image)
-    plt.show()
+    # plt.imshow(original_colored_image)
+    # plt.show()
+
+    display_image(original_colored_image, maze_name)
     # cv.imshow('image', original_colored_image)
     # cv.waitKey(0)
     # cv.destroyAllWindows()
