@@ -170,16 +170,18 @@ namespace WindowsFormsApp1
             psi.WorkingDirectory = currDir.Substring(0, indexOfScriptPath);
             process.StartInfo = psi;
             process.Start();
-            process.OutputDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
-            process.ErrorDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            //process.OutputDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
+            //process.ErrorDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
+            //process.BeginOutputReadLine();
+            //process.BeginErrorReadLine();
+
             using (StreamWriter sw = process.StandardInput)
             {
                 foreach (var cmd in cmds)
                 {
                     sw.WriteLine(cmd);
-                    //var error = process.StandardError.ReadToEnd();
+                    var error = process.StandardError.ReadToEnd();
+                    var result = process.StandardError.ReadToEnd();
                 }
             }
             process.WaitForExit();
