@@ -37,7 +37,8 @@ def parse_params(corrds):
 
 def save_image(img, maze_name):
     curr_dir = os.getcwd()
-    os.chdir(f"{curr_dir}\mazes")
+    print(curr_dir)
+    os.chdir(f"{curr_dir}\\mazes")
     filename = f'{maze_name}_Solved.jpg'
     cv.imwrite(filename, img)
 
@@ -95,7 +96,7 @@ def is_near_wall(pixel, edges, d, dir):
         for j in range(ranges[2], ranges[3]):
             x = pixel.X + i
             y = pixel.Y + j
-            if x < M and y < N and edges[x][y] == 255:
+            if x < M and y < N and edges[x][y] > 200:
                 wallSurrounding = True
                 break
         if wallSurrounding:
@@ -262,27 +263,27 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                 lastLR = 'l'
                 for j in range(draw_range):
                     if j + original_image_coords[1] < original_image.shape[1]:
-                        original_image[original_image_coords[0], original_image_coords[1] + j, 0:2] = 0
-                        original_image[original_image_coords[0], original_image_coords[1] + j, 2] = 255
+                        original_image[original_image_coords[0], original_image_coords[1] + j, 0] = 255
+                        original_image[original_image_coords[0], original_image_coords[1] + j, 1:] = 0
                     else:
                         break
             elif (closerTo == 's' and lastLR == 'r') or closerTo == 'r':
                 lastLR = 'r'
                 for j in range(draw_range):
                     if original_image_coords[1] - j >= 0:
-                        original_image[original_image_coords[0], original_image_coords[1] - j, 0:2] = 0
-                        original_image[original_image_coords[0], original_image_coords[1] - j, 2] = 255
+                        original_image[original_image_coords[0], original_image_coords[1] - j, 0] = 255
+                        original_image[original_image_coords[0], original_image_coords[1] - j, 1:] = 0
                     else:
                         break
             else:
                 lastLR = 'e'
                 for j in range(draw_range // 2):
                     if original_image_coords[1] - j >= 0:
-                        original_image[original_image_coords[0], curr.Y + left - j, 0:2] = 0
-                        original_image[original_image_coords[0], curr.Y + left - j, 2] = 255
+                        original_image[original_image_coords[0], curr.Y + left - j, 0] = 255
+                        original_image[original_image_coords[0], curr.Y + left - j, 1:] = 0
                     if original_image_coords[1] + j < original_image.shape[1]:
-                        original_image[original_image_coords[0], original_image_coords[1] + j, 0:2] = 0
-                        original_image[original_image_coords[0], original_image_coords[1] + j, 2] = 255
+                        original_image[original_image_coords[0], original_image_coords[1] + j, 0] = 255
+                        original_image[original_image_coords[0], original_image_coords[1] + j, 1:] = 0
 
         else:
             draw_range = round(Pixel.draw_line_size[Pixel.d] * Rx)
@@ -291,8 +292,8 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                 lastUD = 'u'
                 for j in range(draw_range):
                     if original_image_coords[0] + j < original_image.shape[0]:
-                        original_image[original_image_coords[0] + j, original_image_coords[1], 0:2] = 0
-                        original_image[original_image_coords[0] + j, original_image_coords[1], 2] = 255
+                        original_image[original_image_coords[0] + j, original_image_coords[1], 0] = 255
+                        original_image[original_image_coords[0] + j, original_image_coords[1], 1:] = 0
                     else:
                         break
 
@@ -300,19 +301,19 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                 lastUD = 'd'
                 for j in range(draw_range):
                     if original_image_coords[0] - j >= 0:
-                        original_image[original_image_coords[0] - j, original_image_coords[1], 0:2] = 0
-                        original_image[original_image_coords[0] - j, original_image_coords[1], 2] = 255
+                        original_image[original_image_coords[0] - j, original_image_coords[1], 0:2] = 255
+                        original_image[original_image_coords[0] - j, original_image_coords[1], 1:] = 0
                     else:
                         break
             else:
                 lastUD = 'e'
                 for j in range(draw_range // 2):
                     if original_image_coords[0] - j >= 0:
-                        original_image[original_image_coords[0] - j, original_image_coords[1], 0:2] = 0
-                        original_image[original_image_coords[0] - j, original_image_coords[1], 2] = 255
+                        original_image[original_image_coords[0] - j, original_image_coords[1], 0] = 255
+                        original_image[original_image_coords[0] - j, original_image_coords[1], 1:] = 0
                     if curr.X + j + up < curr.X + j:
-                        original_image[curr.X + j + up, original_image_coords[1], 0:2] = 0
-                        original_image[curr.X + j + up, original_image_coords[1], 2] = 255
+                        original_image[curr.X + j + up, original_image_coords[1], 0] = 255
+                        original_image[curr.X + j + up, original_image_coords[1], 1:] = 0
 
         curr = curr.prev
 
@@ -325,7 +326,6 @@ if __name__ == "__main__":
     Rx_ui, Ry_ui = get_resize_relations(ui_image_size_param, original_colored_image.shape[:-1])
     original_start = get_new_coords_by_relations(start_param[0], start_param[1], Rx_ui, Ry_ui)
     original_end = get_new_coords_by_relations(end_param[0], end_param[1], Rx_ui, Ry_ui)
-
     ##### SAMPLE START END POINTS ####
     # start_old = (10, 10)  # maze1
     # end_old = (380, 400)
@@ -341,8 +341,8 @@ if __name__ == "__main__":
 
     ##################################
 
-    plt.imshow(original_colored_image)
-    plt.show()
+    # plt.imshow(original_colored_image)
+    # plt.show()
 
     cropped_image, bb = crop_background(original_colored_image)
     start_after_crop = get_new_coords_after_crop(bb, original_start[0], original_start[1])
@@ -353,14 +353,9 @@ if __name__ == "__main__":
     Rx, Ry = get_resize_relations(size_after_crop, solve_size)
     start_after_resize = get_new_coords_by_relations(start_after_crop[0], start_after_crop[1], Rx, Ry)
     end_after_resize = get_new_coords_by_relations(end_after_crop[0], end_after_crop[1], Rx, Ry)
-    plt.imshow(resized_cropped_image)
-    plt.show()
     gray_image = cv.cvtColor(resized_cropped_image, cv.COLOR_BGR2GRAY)
-    plt.imshow(resized_cropped_image)
-    plt.show()
     edges = cv.Canny(gray_image, 100, 200)
-    plt.imshow(edges)
-    plt.show()
+
     maze = init_maze(gray_image)
     N, M = edges.shape
     for d in Pixel.ds:
@@ -375,9 +370,8 @@ if __name__ == "__main__":
 
     draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
 
-    save_image(original_colored_image, maze_name)
     plt.imshow(original_colored_image)
     plt.show()
-    cv.imshow('image', original_colored_image)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    # cv.imshow('image', original_colored_image)
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()

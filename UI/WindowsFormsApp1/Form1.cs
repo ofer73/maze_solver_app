@@ -63,7 +63,10 @@ namespace WindowsFormsApp1
                         endVal.Text = String.Format("({0},{1})", x, y);
                     }
             }
-            MessageBox.Show(String.Format("No maze uploaded, please choose a maze!"));
+            else 
+            {
+                MessageBox.Show(String.Format("No maze uploaded, please choose a maze!"));
+            }
 
         }
 
@@ -71,11 +74,6 @@ namespace WindowsFormsApp1
         {
             if(startVal.Text.Length>0 && endVal.Text.Length > 0 && Image1.Image!=null)
             {
-                
-                ////proccess Info
-                //var psi = new ProcessStartInfo();
-                //psi.FileName = @"C:\Users\t-ofermoses\Anaconda3\python.exe";
-                //var script = @"C:\Users\t-ofermoses\OneDrive - Microsoft\Desktop\Ofer\Univesity\SemesterE\CV\assignments\maze_solver\maze_solver\main_eg.py";
 
                 //Proccess args
                 var start = startVal.Text.Substring(1, startVal.Text.Length - 2); // Remove parenthasis ()
@@ -88,41 +86,12 @@ namespace WindowsFormsApp1
 
                 var cmds = new List<string> 
                 { 
-                    "conda create maze_solver_env",
-                    "conda activate maze_solver_env",
                     "pip install -r requirements.txt",
                     $"python solve_maze.py {filppedStart} {filppedEnd} {imagePath} {sizeParam}"
                 };
 
                 RunCommands(cmds);
 
-
-                //psi.Arguments = $"\"{script}\" \"{start_int}\" \"{end_int}\" \"{Image1.Image}\"";
-                ////psi.Arguments = $"\"{script}\""; // working examplk
-
-                ////prccess configuration
-                //psi.UseShellExecute = false;
-                //psi.CreateNoWindow = true;
-                //psi.RedirectStandardOutput = true;
-                //psi.RedirectStandardError = true;
-
-                ////excecute
-                //var errors = "";
-                //var results = "";
-
-                //using (var process = Process.Start(psi))
-                //{
-                //    errors = process.StandardError.ReadToEnd();
-                //    results = process.StandardOutput.ReadToEnd();
-                //    //if (results != null)
-                //    //{
-                //    //    Process photoViewer = new Process();
-                //    //    photoViewer.StartInfo.FileName = @"The photo viewer file path";
-                //    //    photoViewer.StartInfo.Arguments = @"Your image file path";
-                //    //    photoViewer.Start();
-                //    //}
-
-                //}
             }
             else if(Image1.Image!=null)
             {
@@ -170,24 +139,28 @@ namespace WindowsFormsApp1
             psi.WorkingDirectory = currDir.Substring(0, indexOfScriptPath);
             process.StartInfo = psi;
             process.Start();
-            //process.OutputDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
-            //process.ErrorDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
-            //process.BeginOutputReadLine();
-            //process.BeginErrorReadLine();
+            process.OutputDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
+            process.ErrorDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
             using (StreamWriter sw = process.StandardInput)
             {
                 foreach (var cmd in cmds)
                 {
                     sw.WriteLine(cmd);
-                    var error = process.StandardError.ReadToEnd();
-                    var result = process.StandardError.ReadToEnd();
+                    
                 }
             }
             process.WaitForExit();
         }
 
         private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
         {
 
         }
