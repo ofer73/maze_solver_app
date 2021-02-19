@@ -78,40 +78,47 @@ namespace WindowsFormsApp1
                 var script = @"C:\Users\t-ofermoses\OneDrive - Microsoft\Desktop\Ofer\Univesity\SemesterE\CV\assignments\maze_solver\maze_solver\main_eg.py";
 
                 //Proccess args
-                var start = startVal.Text.Split(',');
-                start[0] = start[0].Substring(1);
-                start[1] = start[1].Substring(0,start[1].Length-1);
-                var end = endVal.Text.Split(',');
-                end[0] = end[0].Substring(1);
-                end[1] = end[1].Substring(0, end[1].Length - 1);
-                var start_int =  (Convert.ToInt32(start[0]), Convert.ToInt32(start[1]));
-                var end_int =    (Convert.ToInt32(end[0]), Convert.ToInt32(end[1]));
-                psi.Arguments = $"\"{script}\" \"{start_int}\" \"{end_int}\" \"{Image1.Image}\"";
-                //psi.Arguments = $"\"{script}\""; // working examplk
+                var start = startVal.Text.Substring(1, startVal.Text.Length - 1); // Remove parenthasis ()
+                var end = endVal.Text.Substring(1, endVal.Text.Length - 1);
+                var imagePath = Image1.ImageLocation;
 
-                //prccess configuration
-                psi.UseShellExecute = false;
-                psi.CreateNoWindow = true;
-                psi.RedirectStandardOutput = true;
-                psi.RedirectStandardError = true;
+                var cmds = new List<string> 
+                { 
+                    "conda create maze_solver_env",
+                    "conda activate maze_solver_env",
+                    "pip install -r requirements.txt",
+                    $"python main_eg.py {start} {end} {imagePath}"
+                };
 
-                //excecute
-                var errors = "";
-                var results = "";
+                RunCommands(cmds);
 
-                using (var process = Process.Start(psi))
-                {
-                    errors = process.StandardError.ReadToEnd();
-                    results = process.StandardOutput.ReadToEnd();
-                    //if (results != null)
-                    //{
-                    //    Process photoViewer = new Process();
-                    //    photoViewer.StartInfo.FileName = @"The photo viewer file path";
-                    //    photoViewer.StartInfo.Arguments = @"Your image file path";
-                    //    photoViewer.Start();
-                    //}
 
-                }
+                //psi.Arguments = $"\"{script}\" \"{start_int}\" \"{end_int}\" \"{Image1.Image}\"";
+                ////psi.Arguments = $"\"{script}\""; // working examplk
+
+                ////prccess configuration
+                //psi.UseShellExecute = false;
+                //psi.CreateNoWindow = true;
+                //psi.RedirectStandardOutput = true;
+                //psi.RedirectStandardError = true;
+
+                ////excecute
+                //var errors = "";
+                //var results = "";
+
+                //using (var process = Process.Start(psi))
+                //{
+                //    errors = process.StandardError.ReadToEnd();
+                //    results = process.StandardOutput.ReadToEnd();
+                //    //if (results != null)
+                //    //{
+                //    //    Process photoViewer = new Process();
+                //    //    photoViewer.StartInfo.FileName = @"The photo viewer file path";
+                //    //    photoViewer.StartInfo.Arguments = @"Your image file path";
+                //    //    photoViewer.Start();
+                //    //}
+
+                //}
             }
             else if(Image1.Image!=null)
             {
@@ -143,6 +150,33 @@ namespace WindowsFormsApp1
             var resizeFactor = Math.Max(wfactor, hfactor);
             var imageSize = new Size((int)(img.Width / resizeFactor), (int)(img.Height / resizeFactor));
             return imageSize;
+        }
+
+        private static void RunCommands(List<string> cmds)
+        {
+            var process = new Process();
+            var psi = new ProcessStartInfo();
+            psi.FileName = "cmd.exe";
+            psi.RedirectStandardInput = true;
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.UseShellExecute = false;
+            var currDir = Directory.GetCurrentDirectory();
+            psi.WorkingDirectory = currDir.Substring(0, currDir.LastIndexOf('\\'));
+            process.StartInfo = psi;
+            process.Start();
+            process.OutputDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
+            process.ErrorDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            using (StreamWriter sw = process.StandardInput)
+            {
+                foreach (var cmd in cmds)
+                {
+                    sw.WriteLine(cmd);
+                }
+            }
+            process.WaitForExit();
         }
     }
 }
