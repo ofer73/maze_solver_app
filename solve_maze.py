@@ -3,6 +3,8 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import queue
 import os
+import sys
+
 
 class Pixel:
     ds = [6, 5, 4, 3, 2, 1]
@@ -10,7 +12,7 @@ class Pixel:
     # draw_line_size = {1: 2, 2: 3, 3: 3, 4: 3, 5: 4, 6: 4}
     draw_line_size = {1: 2, 2: 4, 3: 6, 4: 8, 5: 10, 6: 12}
 
-    def _init_(self, X, Y, visited, prev):
+    def __init__(self, X, Y, visited, prev):
         self.X = X
         self.Y = Y
         self.visited = visited
@@ -26,22 +28,28 @@ def init_maze(img):
     return maze
 
 
-def parse_params(corrd1, corrd2):
-    st_x1, st_y1 = corrd1.split(',')
-    st_x2, st_y2 = corrd2.split(',')
+def parse_params(corrds):
+    st_x1, st_y1 = corrds.split(',')
     x1, y1 = int(st_x1), int(st_y1)
-    x2, y2 = int(st_x2), int(st_y2)
 
-    return (x1, y1), (x2, y2)
+    return (x1, y1)
 
-def save_image(img):
+
+def save_image(img, maze_name):
     curr_dir = os.getcwd()
     os.chdir(f"{curr_dir}\mazes")
-    print(os.getcwd()) # for checkkkkk
-    filename = 'mazeSolved.jpg'
-    cv.imwrite(filename,img)
+    filename = f'{maze_name}_Solved.jpg'
+    cv.imwrite(filename, img)
 
 
+def proccess_params(args):
+    start_param = args[0]
+    end_param = args[1]
+    image_path = args[2]
+    ui_image_size_param = args[3]
+    start, end, ui_image_size = parse_params(start_param), parse_params(end_param), parse_params(ui_image_size_param)
+    image_name = image_path.split('\\')[-1].split('.')[0]
+    return start, end, image_path, ui_image_size, image_name
 
 
 def crop_background(img):
@@ -115,28 +123,6 @@ def get_dir(curr, neighbor):
     return dir
 
 
-def getNewCoords(x, y, bb, size):
-    bbUpperLeftX = bb[0][0]
-    bbUpperLeftY = bb[0][1]
-    bbLowerRightX = bb[2][0]
-    bbLowerRightY = bb[2][1]
-
-    sizeX = bbLowerRightX - bbUpperLeftX
-    sizeY = bbLowerRightY - bbUpperLeftY
-
-    sizeMax = max(sizeX, sizeY)
-
-    centerX = (bbLowerRightX + bbUpperLeftX) / 2
-    centerY = (bbLowerRightY + bbUpperLeftY) / 2
-
-    offsetX = (centerX - sizeMax / 2) * size / sizeMax
-    offsetY = (centerY - sizeMax / 2) * size / sizeMax
-
-    x = x * size / sizeMax - offsetX
-    y = y * size / sizeMax - offsetY
-    return (round(x), round(y))
-
-
 def get_resize_relations(size_old, size_new):
     sizeX_new = size_new[0]
     sizeY_new = size_new[1]
@@ -150,7 +136,7 @@ def get_resize_relations(size_old, size_new):
 
 
 # calculate new coordinates of (x,y) after resizing an image
-def getNewCoords2(x, y, Rx, Ry):
+def get_new_coords_by_relations(x, y, Rx, Ry):
     return round(Rx * x), round(Ry * y)
 
 
@@ -253,9 +239,6 @@ def draw_on_original_image(bb, original_image, resized_image):
                 original_image[up + i, left + j, :] = line_array
 
 
-##############################################
-
-
 # use solution on the resized cropped image to draw solution line on original image
 def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
     curr = end
@@ -268,7 +251,8 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
     while (curr.prev != None):
         prev = curr.prev
         dir = get_dir(prev, curr)
-        pre_resize_corrds = getNewCoords2(curr.X, curr.Y, Rx, Ry)  # coordinates of cropped image before resizing
+        pre_resize_corrds = get_new_coords_by_relations(curr.X, curr.Y, Rx,
+                                                        Ry)  # coordinates of cropped image before resizing
         original_image_coords = (pre_resize_corrds[0] + up, pre_resize_corrds[1] + left)  # coords of original image
 
         if dir == 'u' or dir == 'd':
@@ -332,38 +316,43 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
 
         curr = curr.prev
 
+    ########## main ##########
 
-##############################################
 
+if __name__ == "__main__":
+    start_param, end_param, image_path_param, ui_image_size_param, maze_name = proccess_params(sys.argv[1:])
+    original_colored_image = cv.imread(image_path_param)
+    Rx_ui, Ry_ui = get_resize_relations(ui_image_size_param, original_colored_image.shape[:-1])
+    original_start = get_new_coords_by_relations(start_param[0], start_param[1], Rx_ui, Ry_ui)
+    original_end = get_new_coords_by_relations(end_param[0], end_param[1], Rx_ui, Ry_ui)
 
-if _name_ == "_main_":
-    original_colored_image = cv.imread("mazes/maze3.jpeg")
-
+    ##### SAMPLE START END POINTS ####
     # start_old = (10, 10)  # maze1
     # end_old = (380, 400)
     # end_old = (500, 210)  # maze 1 transposed
     # start_old = (224, 380) #maze 2 (round)
     # end_old = (385, 390)
-    start_old = (23, 15)  # maze 3
-    end_old = (460, 633)
+    # original_start = (23, 15)  # maze 3
+    # original_end = (460, 633)
     # start_old = (100, 100)  # maze pyramid
     # end_old = (450, 600)
     # start_old = (100, 100)  # maze4
     # end_old = (450, 600)
 
+    ##################################
+
     plt.imshow(original_colored_image)
     plt.show()
 
     cropped_image, bb = crop_background(original_colored_image)
-    start_after_crop = get_new_coords_after_crop(bb, start_old[0], start_old[1])
-    end_after_crop = get_new_coords_after_crop(bb, end_old[0], end_old[1])
+    start_after_crop = get_new_coords_after_crop(bb, original_start[0], original_start[1])
+    end_after_crop = get_new_coords_after_crop(bb, original_end[0], original_end[1])
     size_after_crop = cropped_image.shape[:-1]
-    # solve_size = (900, 900)  # TODO: choose default size / dynamic based on input image
     solve_size = get_solve_size(cropped_image)
     resized_cropped_image = cv.resize(cropped_image, solve_size[::-1])
     Rx, Ry = get_resize_relations(size_after_crop, solve_size)
-    start_after_resize = getNewCoords2(start_after_crop[0], start_after_crop[1], Rx, Ry)
-    end_after_resize = getNewCoords2(end_after_crop[0], end_after_crop[1], Rx, Ry)
+    start_after_resize = get_new_coords_by_relations(start_after_crop[0], start_after_crop[1], Rx, Ry)
+    end_after_resize = get_new_coords_by_relations(end_after_crop[0], end_after_crop[1], Rx, Ry)
     plt.imshow(resized_cropped_image)
     plt.show()
     gray_image = cv.cvtColor(resized_cropped_image, cv.COLOR_BGR2GRAY)
@@ -384,18 +373,9 @@ if _name_ == "_main_":
 
     end_pixel = maze[end_after_resize[0]][end_after_resize[1]]
 
-    # draw_line(colorImg2, end_pixel, edges, maze)
     draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
 
-    # drawed_resized_image = cv.resize(colorImg2, size_after_crop[::-1])
-    # left = bb[0][0]
-    # right = bb[1][0]
-    # up = bb[0][1]
-    # down = bb[2][1]
-    # original_colored_image[up:down, left:right] = drawed_resized_image
-    # draw_on_original_image(bb, original_colored_image, drawed_resized_image)
-    # print(edges)
-    save_image(original_colored_image)
+    save_image(original_colored_image, maze_name)
     plt.imshow(original_colored_image)
     plt.show()
     cv.imshow('image', original_colored_image)

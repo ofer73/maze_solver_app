@@ -72,22 +72,26 @@ namespace WindowsFormsApp1
             if(startVal.Text.Length>0 && endVal.Text.Length > 0 && Image1.Image!=null)
             {
                 
-                //proccess Info
-                var psi = new ProcessStartInfo();
-                psi.FileName = @"C:\Users\t-ofermoses\Anaconda3\python.exe";
-                var script = @"C:\Users\t-ofermoses\OneDrive - Microsoft\Desktop\Ofer\Univesity\SemesterE\CV\assignments\maze_solver\maze_solver\main_eg.py";
+                ////proccess Info
+                //var psi = new ProcessStartInfo();
+                //psi.FileName = @"C:\Users\t-ofermoses\Anaconda3\python.exe";
+                //var script = @"C:\Users\t-ofermoses\OneDrive - Microsoft\Desktop\Ofer\Univesity\SemesterE\CV\assignments\maze_solver\maze_solver\main_eg.py";
 
                 //Proccess args
-                var start = startVal.Text.Substring(1, startVal.Text.Length - 1); // Remove parenthasis ()
-                var end = endVal.Text.Substring(1, endVal.Text.Length - 1);
+                var start = startVal.Text.Substring(1, startVal.Text.Length - 2); // Remove parenthasis ()
+                var end = endVal.Text.Substring(1, endVal.Text.Length - 2);
+                var filppedStart = string.Join(",",start.Split(',').Reverse());
+                var filppedEnd = string.Join(",", end.Split(',').Reverse());
                 var imagePath = Image1.ImageLocation;
+                var imageNewSize = getNewImageSIze();
+                var sizeParam = $"{imageNewSize.Height},{imageNewSize.Width}";
 
                 var cmds = new List<string> 
                 { 
                     "conda create maze_solver_env",
                     "conda activate maze_solver_env",
                     "pip install -r requirements.txt",
-                    $"python main_eg.py {start} {end} {imagePath}"
+                    $"python solve_maze.py {filppedStart} {filppedEnd} {imagePath} {sizeParam}"
                 };
 
                 RunCommands(cmds);
@@ -162,7 +166,8 @@ namespace WindowsFormsApp1
             psi.RedirectStandardError = true;
             psi.UseShellExecute = false;
             var currDir = Directory.GetCurrentDirectory();
-            psi.WorkingDirectory = currDir.Substring(0, currDir.LastIndexOf('\\'));
+            var indexOfScriptPath = currDir.LastIndexOf(@"\UI\");
+            psi.WorkingDirectory = currDir.Substring(0, indexOfScriptPath);
             process.StartInfo = psi;
             process.Start();
             process.OutputDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
@@ -174,9 +179,15 @@ namespace WindowsFormsApp1
                 foreach (var cmd in cmds)
                 {
                     sw.WriteLine(cmd);
+                    //var error = process.StandardError.ReadToEnd();
                 }
             }
             process.WaitForExit();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -46,9 +46,10 @@ namespace WindowsFormsApp1
             // button1
             // 
             this.button1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button1.Location = new System.Drawing.Point(12, 734);
+            this.button1.Location = new System.Drawing.Point(16, 823);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(96, 40);
+            this.button1.Size = new System.Drawing.Size(128, 49);
             this.button1.TabIndex = 1;
             this.button1.Text = "upload_maze";
             this.button1.UseVisualStyleBackColor = true;
@@ -57,9 +58,10 @@ namespace WindowsFormsApp1
             // Image1
             // 
             this.Image1.AccessibleName = "Image";
-            this.Image1.Location = new System.Drawing.Point(12, 8);
+            this.Image1.Location = new System.Drawing.Point(16, 10);
+            this.Image1.Margin = new System.Windows.Forms.Padding(4);
             this.Image1.Name = "Image1";
-            this.Image1.Size = new System.Drawing.Size(1279, 689);
+            this.Image1.Size = new System.Drawing.Size(1562, 786);
             this.Image1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.Image1.TabIndex = 2;
             this.Image1.TabStop = false;
@@ -68,9 +70,10 @@ namespace WindowsFormsApp1
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 700);
+            this.label1.Location = new System.Drawing.Point(13, 800);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(591, 13);
+            this.label1.Size = new System.Drawing.Size(793, 17);
             this.label1.TabIndex = 6;
             this.label1.Text = "To solve a maze. please upload a maze , then select a start and end point from th" +
     "e image. finally to start click solve my maze";
@@ -78,25 +81,28 @@ namespace WindowsFormsApp1
             // startVal
             // 
             this.startVal.AutoSize = true;
-            this.startVal.Location = new System.Drawing.Point(199, 762);
+            this.startVal.Location = new System.Drawing.Point(284, 848);
+            this.startVal.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.startVal.Name = "startVal";
-            this.startVal.Size = new System.Drawing.Size(0, 13);
+            this.startVal.Size = new System.Drawing.Size(0, 17);
             this.startVal.TabIndex = 7;
             // 
             // endVal
             // 
             this.endVal.AutoSize = true;
-            this.endVal.Location = new System.Drawing.Point(255, 762);
+            this.endVal.Location = new System.Drawing.Point(353, 848);
+            this.endVal.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.endVal.Name = "endVal";
-            this.endVal.Size = new System.Drawing.Size(0, 13);
+            this.endVal.Size = new System.Drawing.Size(0, 17);
             this.endVal.TabIndex = 8;
             // 
             // start_point_radio
             // 
             this.start_point_radio.AutoSize = true;
-            this.start_point_radio.Location = new System.Drawing.Point(114, 734);
+            this.start_point_radio.Location = new System.Drawing.Point(163, 823);
+            this.start_point_radio.Margin = new System.Windows.Forms.Padding(4);
             this.start_point_radio.Name = "start_point_radio";
-            this.start_point_radio.Size = new System.Drawing.Size(74, 17);
+            this.start_point_radio.Size = new System.Drawing.Size(95, 21);
             this.start_point_radio.TabIndex = 9;
             this.start_point_radio.TabStop = true;
             this.start_point_radio.Text = "Start Point";
@@ -105,9 +111,10 @@ namespace WindowsFormsApp1
             // end_point_radio
             // 
             this.end_point_radio.AutoSize = true;
-            this.end_point_radio.Location = new System.Drawing.Point(114, 757);
+            this.end_point_radio.Location = new System.Drawing.Point(163, 851);
+            this.end_point_radio.Margin = new System.Windows.Forms.Padding(4);
             this.end_point_radio.Name = "end_point_radio";
-            this.end_point_radio.Size = new System.Drawing.Size(71, 17);
+            this.end_point_radio.Size = new System.Drawing.Size(90, 21);
             this.end_point_radio.TabIndex = 10;
             this.end_point_radio.TabStop = true;
             this.end_point_radio.Text = "End Point";
@@ -117,9 +124,10 @@ namespace WindowsFormsApp1
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label4.Location = new System.Drawing.Point(199, 734);
+            this.label4.Location = new System.Drawing.Point(266, 822);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(40, 16);
+            this.label4.Size = new System.Drawing.Size(50, 20);
             this.label4.TabIndex = 11;
             this.label4.Text = "Start";
             // 
@@ -127,9 +135,10 @@ namespace WindowsFormsApp1
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label5.Location = new System.Drawing.Point(255, 734);
+            this.label5.Location = new System.Drawing.Point(341, 822);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(35, 16);
+            this.label5.Size = new System.Drawing.Size(41, 20);
             this.label5.TabIndex = 12;
             this.label5.Text = "End";
             // 
@@ -138,9 +147,10 @@ namespace WindowsFormsApp1
             this.solve_maze_button.BackColor = System.Drawing.Color.Lime;
             this.solve_maze_button.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.solve_maze_button.ForeColor = System.Drawing.Color.Blue;
-            this.solve_maze_button.Location = new System.Drawing.Point(1207, 718);
+            this.solve_maze_button.Location = new System.Drawing.Point(1396, 805);
+            this.solve_maze_button.Margin = new System.Windows.Forms.Padding(4);
             this.solve_maze_button.Name = "solve_maze_button";
-            this.solve_maze_button.Size = new System.Drawing.Size(116, 57);
+            this.solve_maze_button.Size = new System.Drawing.Size(155, 70);
             this.solve_maze_button.TabIndex = 13;
             this.solve_maze_button.Text = "Solve my Maze!";
             this.solve_maze_button.UseVisualStyleBackColor = false;
@@ -148,9 +158,10 @@ namespace WindowsFormsApp1
             // 
             // imageSize
             // 
-            this.imageSize.Location = new System.Drawing.Point(948, 718);
+            this.imageSize.Location = new System.Drawing.Point(1223, 813);
+            this.imageSize.Margin = new System.Windows.Forms.Padding(4);
             this.imageSize.Name = "imageSize";
-            this.imageSize.Size = new System.Drawing.Size(112, 48);
+            this.imageSize.Size = new System.Drawing.Size(149, 59);
             this.imageSize.TabIndex = 14;
             this.imageSize.Text = "imageSize(test)";
             this.imageSize.UseVisualStyleBackColor = true;
@@ -158,9 +169,9 @@ namespace WindowsFormsApp1
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1361, 783);
+            this.ClientSize = new System.Drawing.Size(1585, 885);
             this.Controls.Add(this.imageSize);
             this.Controls.Add(this.solve_maze_button);
             this.Controls.Add(this.label5);
@@ -172,8 +183,10 @@ namespace WindowsFormsApp1
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Image1);
             this.Controls.Add(this.button1);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Maze Solver";
+            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.Image1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
