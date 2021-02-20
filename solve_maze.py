@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import queue
 import os
 import sys
-from PIL import Image
 
 
 class Pixel:
@@ -38,13 +37,11 @@ def parse_params(corrds):
 
 def display_image(img, maze_name):
     curr_dir = os.getcwd()
-    os.chdir(f"{curr_dir}\\mazes")
+    os.chdir(f"{curr_dir}\\mazes\\tmp_solved")
     filename = f'{maze_name}_Solved.jpg'
     cv.imwrite(filename, img)
-    display_image = Image.open(filename)
-    display_image.show()
-    os.remove(filename)
 
+    return filename
 
 def proccess_params(args):
     start_param = args[0]
@@ -248,7 +245,6 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
     curr = end
     left = bb[0][0]
     up = bb[0][1]
-    draw_range = Pixel.draw_line_size[Pixel.d]
     lastUD = 'u'
     lastLR = 'r'
 
@@ -258,6 +254,8 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
         pre_resize_corrds = get_new_coords_by_relations(curr.X, curr.Y, Rx,
                                                         Ry)  # coordinates of cropped image before resizing
         original_image_coords = (pre_resize_corrds[0] + up, pre_resize_corrds[1] + left)  # coords of original image
+        if(original_image_coords[1]<180):
+            print('Break')
 
         if dir == 'u' or dir == 'd':
             draw_range = round(Pixel.draw_line_size[Pixel.d] * Ry)
@@ -282,8 +280,8 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                 lastLR = 'e'
                 for j in range(draw_range // 2):
                     if original_image_coords[1] - j >= 0:
-                        original_image[original_image_coords[0], curr.Y + left - j, 0] = 255
-                        original_image[original_image_coords[0], curr.Y + left - j, 1:] = 0
+                        original_image[original_image_coords[0], original_image_coords[1] - j, 0] = 255
+                        original_image[original_image_coords[0], original_image_coords[1] - j, 1:] = 0
                     if original_image_coords[1] + j < original_image.shape[1]:
                         original_image[original_image_coords[0], original_image_coords[1] + j, 0] = 255
                         original_image[original_image_coords[0], original_image_coords[1] + j, 1:] = 0
@@ -304,7 +302,7 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                 lastUD = 'd'
                 for j in range(draw_range):
                     if original_image_coords[0] - j >= 0:
-                        original_image[original_image_coords[0] - j, original_image_coords[1], 0:2] = 255
+                        original_image[original_image_coords[0] - j, original_image_coords[1], 0] = 255
                         original_image[original_image_coords[0] - j, original_image_coords[1], 1:] = 0
                     else:
                         break
@@ -314,9 +312,9 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                     if original_image_coords[0] - j >= 0:
                         original_image[original_image_coords[0] - j, original_image_coords[1], 0] = 255
                         original_image[original_image_coords[0] - j, original_image_coords[1], 1:] = 0
-                    if curr.X + j + up < curr.X + j:
-                        original_image[curr.X + j + up, original_image_coords[1], 0] = 255
-                        original_image[curr.X + j + up, original_image_coords[1], 1:] = 0
+                    if original_image_coords[0] + j < original_image.shape[0]:
+                        original_image[original_image_coords[0] + j, original_image_coords[1], 0] = 255
+                        original_image[original_image_coords[0] + j, original_image_coords[1], 1:] = 0
 
         curr = curr.prev
 
@@ -329,6 +327,8 @@ if __name__ == "__main__":
     Rx_ui, Ry_ui = get_resize_relations(ui_image_size_param, original_colored_image.shape[:-1])
     original_start = get_new_coords_by_relations(start_param[0], start_param[1], Rx_ui, Ry_ui)
     original_end = get_new_coords_by_relations(end_param[0], end_param[1], Rx_ui, Ry_ui)
+    solve_flag = False
+
     ##### SAMPLE START END POINTS ####
     # start_old = (10, 10)  # maze1
     # end_old = (380, 400)
@@ -365,18 +365,22 @@ if __name__ == "__main__":
         Pixel.d = d
         found, seen = solve_maze()
         if found:
+            solve_flag = True
             break
         else:
             restartMaze(seen)
+    if(solve_flag):
+        end_pixel = maze[end_after_resize[0]][end_after_resize[1]]
 
-    end_pixel = maze[end_after_resize[0]][end_after_resize[1]]
+        draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
 
-    draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
+        # plt.imshow(original_colored_image)
+        # plt.show()
 
-    # plt.imshow(original_colored_image)
-    # plt.show()
-
-    display_image(original_colored_image, maze_name)
-    # cv.imshow('image', original_colored_image)
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
+        solution_name = display_image(original_colored_image, maze_name)
+        # cv.imshow('image', original_colored_image)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
+        print(f"*{solution_name}*")
+    else:
+        print("*Failed to solve maze*")

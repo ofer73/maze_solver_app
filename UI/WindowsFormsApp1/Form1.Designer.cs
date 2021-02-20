@@ -1,4 +1,6 @@
 ﻿
+using System.Drawing;
+
 namespace WindowsFormsApp1
 {
     partial class Form1
@@ -41,18 +43,21 @@ namespace WindowsFormsApp1
             this.solve_maze_button = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.sizeTest = new System.Windows.Forms.Button();
+            this.solvedFlag = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.Image1)).BeginInit();
             this.SuspendLayout();
             // 
             // upload_button
             // 
             this.upload_button.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.upload_button.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.upload_button.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.upload_button.Location = new System.Drawing.Point(7, 744);
             this.upload_button.Margin = new System.Windows.Forms.Padding(4);
             this.upload_button.Name = "upload_button";
             this.upload_button.Size = new System.Drawing.Size(128, 49);
             this.upload_button.TabIndex = 1;
-            this.upload_button.Text = "upload_maze";
+            this.upload_button.Text = "Upload Maze";
             this.upload_button.UseVisualStyleBackColor = true;
             this.upload_button.Click += new System.EventHandler(this.uploadButtonClick);
             // 
@@ -67,6 +72,12 @@ namespace WindowsFormsApp1
             this.Image1.TabIndex = 2;
             this.Image1.TabStop = false;
             this.Image1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Image1_DoubleClick);
+            this._startGraphics = this.Image1.CreateGraphics();
+            this._endGraphics = this.Image1.CreateGraphics();
+            this._startPen = new Pen(Color.Red);
+            this._endPen = new Pen(Color.Blue);
+
+
             // 
             // label1
             // 
@@ -183,11 +194,22 @@ namespace WindowsFormsApp1
             this.sizeTest.UseVisualStyleBackColor = true;
             this.sizeTest.Click += new System.EventHandler(this.sizeTest_Click);
             // 
+            // solvedFlag
+            // 
+            this.solvedFlag.AutoSize = true;
+            this.solvedFlag.Location = new System.Drawing.Point(1262, 724);
+            this.solvedFlag.Name = "solvedFlag";
+            this.solvedFlag.Size = new System.Drawing.Size(16, 17);
+            this.solvedFlag.TabIndex = 17;
+            this.solvedFlag.Text = "0";
+            this.solvedFlag.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1471, 800);
+            this.Controls.Add(this.solvedFlag);
             this.Controls.Add(this.sizeTest);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.solve_maze_button);
@@ -203,6 +225,7 @@ namespace WindowsFormsApp1
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Maze Solver";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.Image1)).EndInit();
             this.ResumeLayout(false);
@@ -223,6 +246,7 @@ namespace WindowsFormsApp1
         private System.Windows.Forms.Button solve_maze_button;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button sizeTest;
+        private System.Windows.Forms.Label solvedFlag;
     }
 }
 
