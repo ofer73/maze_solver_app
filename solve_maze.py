@@ -329,24 +329,6 @@ if __name__ == "__main__":
     original_end = get_new_coords_by_relations(end_param[0], end_param[1], Rx_ui, Ry_ui)
     solve_flag = False
 
-    ##### SAMPLE START END POINTS ####
-    # start_old = (10, 10)  # maze1
-    # end_old = (380, 400)
-    # end_old = (500, 210)  # maze 1 transposed
-    # start_old = (224, 380) #maze 2 (round)
-    # end_old = (385, 390)
-    # original_start = (23, 15)  # maze 3
-    # original_end = (460, 633)
-    # start_old = (100, 100)  # maze pyramid
-    # end_old = (450, 600)
-    # start_old = (100, 100)  # maze4
-    # end_old = (450, 600)
-
-    ##################################
-
-    # plt.imshow(original_colored_image)
-    # plt.show()
-
     cropped_image, bb = crop_background(original_colored_image)
     start_after_crop = get_new_coords_after_crop(bb, original_start[0], original_start[1])
     end_after_crop = get_new_coords_after_crop(bb, original_end[0], original_end[1])
