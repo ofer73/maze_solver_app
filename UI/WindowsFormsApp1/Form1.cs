@@ -16,10 +16,14 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-        private Graphics _startGraphics;
-        private Graphics _endGraphics;
-        private Pen _startPen;
-        private Pen _endPen;
+        private Graphics _pictureBoxGraphics ;
+        private Pen _startPen = new Pen(Color.Red);
+        private Pen _endPen = new Pen(Color.Blue);
+        private Brush _startBrush = new SolidBrush(Color.Red);
+        private Brush _endBrush = new SolidBrush(Color.Blue);
+        private string imgLocation;
+        private (int, int) pictureBoxStartPoint = (-1,-1);
+        private (int, int) pictureBoxEndPoint = (-1,-1);
 
         public Form1()
         {
@@ -35,8 +39,8 @@ namespace WindowsFormsApp1
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    var imageLocation = dialog.FileName;
-                    Image1.ImageLocation = imageLocation;
+                    imgLocation = dialog.FileName;
+                    Image1.ImageLocation = imgLocation;
                     startVal.Text = "";
                     endVal.Text = "";
                 }
@@ -51,6 +55,7 @@ namespace WindowsFormsApp1
         {
             if (Image1.Image != null)
             {
+                _pictureBoxGraphics = Image1.CreateGraphics();
                 var b = Image1;
                 int x = b.Width * e.X / Image1.Width;
                 int y = b.Height * e.Y / Image1.Height;
@@ -63,12 +68,30 @@ namespace WindowsFormsApp1
                 else if (start_point_radio.Checked)
                 {
                     startVal.Text = String.Format("({0},{1})", x, y);
-                    //_startGraphics.DrawEllipse(_startPen, e.X, e.Y, 5, 5);
+                    pictureBoxStartPoint = (e.X, e.Y);
+                    Image1.Refresh();
+                    if(pictureBoxEndPoint.Item1 >-1 && pictureBoxEndPoint.Item2 > -1)
+                    {
+                        _pictureBoxGraphics.DrawEllipse(_endPen, pictureBoxEndPoint.Item1, pictureBoxEndPoint.Item2, 8, 8);
+                        _pictureBoxGraphics.FillEllipse(_endBrush, pictureBoxEndPoint.Item1, pictureBoxEndPoint.Item2, 8, 8);
+                    }
+                    _pictureBoxGraphics.DrawEllipse(_startPen, e.X, e.Y, 8, 8);
+                    _pictureBoxGraphics.FillEllipse(_startBrush, e.X, e.Y, 8, 8);
 
                 }
                 else
                 {
                     endVal.Text = String.Format("({0},{1})", x, y);
+                    pictureBoxEndPoint = (e.X, e.Y);
+                    Image1.Refresh();
+                    if (pictureBoxStartPoint.Item1 > -1 && pictureBoxStartPoint.Item2 > -1)
+                    {
+                        _pictureBoxGraphics.DrawEllipse(_startPen, pictureBoxStartPoint.Item1, pictureBoxStartPoint.Item2, 8, 8);
+                        _pictureBoxGraphics.FillEllipse(_startBrush, pictureBoxStartPoint.Item1, pictureBoxStartPoint.Item2, 8, 8);
+
+                    }
+                    _pictureBoxGraphics.DrawEllipse(_endPen, e.X, e.Y, 8, 8);
+                    _pictureBoxGraphics.FillEllipse(_endBrush, e.X, e.Y, 8, 8);
                 }
             }
             else
@@ -103,7 +126,14 @@ namespace WindowsFormsApp1
                
                 if (string.IsNullOrEmpty(result) || result.StartsWith("Failed"))
                 {
-                    MessageBox.Show("Solving the maze Failed!");
+                    if (result.Last() == '1')
+                    {
+                        MessageBox.Show("Solving the maze Failed because start or end points were not inside the maze \n please choose new points!");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Solving the maze Failed!");
+                    }
                 }
                 else
                 {
@@ -255,7 +285,7 @@ namespace WindowsFormsApp1
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(MessageBox.Show("Sure You want to exit? (all unsaved solutions on temp folder will be lost)","Maze Solver",
+            if(MessageBox.Show("Sure You want to exit?\n(all unsaved solutions on temp folder will be lost)","Maze Solver",
                 MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 deleteTempFiles();

@@ -43,6 +43,7 @@ def display_image(img, maze_name):
 
     return filename
 
+
 def proccess_params(args):
     start_param = args[0]
     end_param = args[1]
@@ -254,7 +255,7 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
         pre_resize_corrds = get_new_coords_by_relations(curr.X, curr.Y, Rx,
                                                         Ry)  # coordinates of cropped image before resizing
         original_image_coords = (pre_resize_corrds[0] + up, pre_resize_corrds[1] + left)  # coords of original image
-        if(original_image_coords[1]<180):
+        if (original_image_coords[1] < 180):
             print('Break')
 
         if dir == 'u' or dir == 'd':
@@ -320,6 +321,14 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
 
     ########## main ##########
 
+# Check that input start and end points were not in the background, and lost in the crop process
+def check_input_points_after_crop(end_after_crop, start_after_crop, size_after_crop):
+    for i in range(2):
+        if (end_after_crop[i] < 0 or end_after_crop[i] >= size_after_crop[i] or start_after_crop[i] < 0 or
+                start_after_crop[i] >= size_after_crop[i]):
+            return False
+    return True
+
 
 if __name__ == "__main__":
     start_param, end_param, image_path_param, ui_image_size_param, maze_name = proccess_params(sys.argv[1:])
@@ -333,36 +342,41 @@ if __name__ == "__main__":
     start_after_crop = get_new_coords_after_crop(bb, original_start[0], original_start[1])
     end_after_crop = get_new_coords_after_crop(bb, original_end[0], original_end[1])
     size_after_crop = cropped_image.shape[:-1]
-    solve_size = get_solve_size(cropped_image)
-    resized_cropped_image = cv.resize(cropped_image, solve_size[::-1])
-    Rx, Ry = get_resize_relations(size_after_crop, solve_size)
-    start_after_resize = get_new_coords_by_relations(start_after_crop[0], start_after_crop[1], Rx, Ry)
-    end_after_resize = get_new_coords_by_relations(end_after_crop[0], end_after_crop[1], Rx, Ry)
-    gray_image = cv.cvtColor(resized_cropped_image, cv.COLOR_BGR2GRAY)
-    edges = cv.Canny(gray_image, 100, 200)
-
-    maze = init_maze(gray_image)
-    N, M = edges.shape
-    for d in Pixel.ds:
-        Pixel.d = d
-        found, seen = solve_maze()
-        if found:
-            solve_flag = True
-            break
-        else:
-            restartMaze(seen)
-    if(solve_flag):
-        end_pixel = maze[end_after_resize[0]][end_after_resize[1]]
-
-        draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
-
-        # plt.imshow(original_colored_image)
-        # plt.show()
-
-        solution_name = display_image(original_colored_image, maze_name)
-        # cv.imshow('image', original_colored_image)
-        # cv.waitKey(0)
-        # cv.destroyAllWindows()
-        print(f"*{solution_name}*")
+    valid_start_end_points = check_input_points_after_crop(end_after_crop, start_after_crop, size_after_crop)
+    if(not valid_start_end_points):
+        print("*Failed1*")   #points cropped error
+        exit(0)
     else:
-        print("*Failed to solve maze*")
+        solve_size = get_solve_size(cropped_image)
+        resized_cropped_image = cv.resize(cropped_image, solve_size[::-1])
+        Rx, Ry = get_resize_relations(size_after_crop, solve_size)
+        start_after_resize = get_new_coords_by_relations(start_after_crop[0], start_after_crop[1], Rx, Ry)
+        end_after_resize = get_new_coords_by_relations(end_after_crop[0], end_after_crop[1], Rx, Ry)
+        gray_image = cv.cvtColor(resized_cropped_image, cv.COLOR_BGR2GRAY)
+        edges = cv.Canny(gray_image, 100, 200)
+
+        maze = init_maze(gray_image)
+        N, M = edges.shape
+        for d in Pixel.ds:
+            Pixel.d = d
+            found, seen = solve_maze()
+            if found:
+                solve_flag = True
+                break
+            else:
+                restartMaze(seen)
+        if (solve_flag):
+            end_pixel = maze[end_after_resize[0]][end_after_resize[1]]
+
+            draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
+
+            # plt.imshow(original_colored_image)
+            # plt.show()
+
+            solution_name = display_image(original_colored_image, maze_name)
+            # cv.imshow('image', original_colored_image)
+            # cv.waitKey(0)
+            # cv.destroyAllWindows()
+            print(f"*{solution_name}*")
+        else:
+            print("*Failed to solve maze*")

@@ -189,9 +189,6 @@ def get_solve_size(img):
     return new_size_x, new_size_y
 
 
-
-
-
 def restartMaze(seen):
     for pixel in seen:
         pixel.visited = 0
@@ -369,17 +366,7 @@ if __name__ == "__main__":
 
     end_pixel = maze[end_after_resize[0]][end_after_resize[1]]
 
-    # draw_line(colorImg2, end_pixel, edges, maze)
     draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
-
-    # drawed_resized_image = cv.resize(colorImg2, size_after_crop[::-1])
-    # left = bb[0][0]
-    # right = bb[1][0]
-    # up = bb[0][1]
-    # down = bb[2][1]
-    # original_colored_image[up:down, left:right] = drawed_resized_image
-    # draw_on_original_image(bb, original_colored_image, drawed_resized_image)
-    # print(edges)
     plt.imshow(original_colored_image)
     plt.show()
     cv.imshow('image', original_colored_image)

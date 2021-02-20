@@ -51,11 +51,11 @@ namespace WindowsFormsApp1
             // 
             this.upload_button.Cursor = System.Windows.Forms.Cursors.Hand;
             this.upload_button.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.upload_button.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.upload_button.ForeColor = System.Drawing.Color.Fuchsia;
             this.upload_button.Location = new System.Drawing.Point(7, 744);
             this.upload_button.Margin = new System.Windows.Forms.Padding(4);
             this.upload_button.Name = "upload_button";
-            this.upload_button.Size = new System.Drawing.Size(128, 49);
+            this.upload_button.Size = new System.Drawing.Size(119, 49);
             this.upload_button.TabIndex = 1;
             this.upload_button.Text = "Upload Maze";
             this.upload_button.UseVisualStyleBackColor = true;
@@ -72,12 +72,6 @@ namespace WindowsFormsApp1
             this.Image1.TabIndex = 2;
             this.Image1.TabStop = false;
             this.Image1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Image1_DoubleClick);
-            this._startGraphics = this.Image1.CreateGraphics();
-            this._endGraphics = this.Image1.CreateGraphics();
-            this._startPen = new Pen(Color.Red);
-            this._endPen = new Pen(Color.Blue);
-
-
             // 
             // label1
             // 
@@ -114,10 +108,11 @@ namespace WindowsFormsApp1
             // start_point_radio
             // 
             this.start_point_radio.AutoSize = true;
-            this.start_point_radio.Location = new System.Drawing.Point(143, 745);
+            this.start_point_radio.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.start_point_radio.Location = new System.Drawing.Point(134, 745);
             this.start_point_radio.Margin = new System.Windows.Forms.Padding(4);
             this.start_point_radio.Name = "start_point_radio";
-            this.start_point_radio.Size = new System.Drawing.Size(95, 21);
+            this.start_point_radio.Size = new System.Drawing.Size(106, 21);
             this.start_point_radio.TabIndex = 9;
             this.start_point_radio.TabStop = true;
             this.start_point_radio.Text = "Start Point";
@@ -126,10 +121,11 @@ namespace WindowsFormsApp1
             // end_point_radio
             // 
             this.end_point_radio.AutoSize = true;
-            this.end_point_radio.Location = new System.Drawing.Point(143, 773);
+            this.end_point_radio.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.end_point_radio.Location = new System.Drawing.Point(134, 773);
             this.end_point_radio.Margin = new System.Windows.Forms.Padding(4);
             this.end_point_radio.Name = "end_point_radio";
-            this.end_point_radio.Size = new System.Drawing.Size(90, 21);
+            this.end_point_radio.Size = new System.Drawing.Size(99, 21);
             this.end_point_radio.TabIndex = 10;
             this.end_point_radio.TabStop = true;
             this.end_point_radio.Text = "End Point";
@@ -139,6 +135,7 @@ namespace WindowsFormsApp1
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label4.ForeColor = System.Drawing.Color.Red;
             this.label4.Location = new System.Drawing.Point(258, 744);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
@@ -150,6 +147,7 @@ namespace WindowsFormsApp1
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label5.ForeColor = System.Drawing.Color.Blue;
             this.label5.Location = new System.Drawing.Point(341, 745);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
@@ -174,6 +172,7 @@ namespace WindowsFormsApp1
             // label2
             // 
             this.label2.AutoSize = true;
+            this.label2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.label2.Location = new System.Drawing.Point(413, 768);
