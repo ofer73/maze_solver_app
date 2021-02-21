@@ -3,11 +3,12 @@ import cv2 as cv
 import queue
 import os
 import sys
+import matplotlib.pyplot as plt
 
 
 class Pixel:
     ds = [3, 2, 1]
-    d = 3
+    distance = 3
     draw_line_size = {1: 2, 2: 4, 3: 4}
 
     def __init__(self, X, Y, visited, prev):
@@ -16,7 +17,7 @@ class Pixel:
         self.visited = visited
         self.prev = prev
 
-
+# Initialize maze as board of Pixel objects
 def init_maze(img):
     maze = [[0 for i in range(edges.shape[1])] for j in range(edges.shape[0])]
     for r in range(img.shape[0]):
@@ -33,7 +34,7 @@ def parse_params(corrds):
     return (x1, y1)
 
 
-def display_image(img, maze_name):
+def save_solution_img(img, maze_name):
     curr_dir = os.getcwd()
     os.chdir(f"{curr_dir}\\mazes\\tmp_solved")
     filename = f'{maze_name}_Solved.jpg'
@@ -42,6 +43,7 @@ def display_image(img, maze_name):
     return filename
 
 
+# Process input parameters of : start_point , end_point, maze_file_path, maze_size
 def proccess_params(args):
     start_param = args[0]
     end_param = args[1]
@@ -52,38 +54,38 @@ def proccess_params(args):
     return start, end, image_path, ui_image_size, image_name
 
 
+# Crop background around the main contour of the maze
+# in order to avoid "illegal" solutions outside the maze and reduce BFS runtime
 def crop_background(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     th, threshed = cv.threshold(gray, 240, 255, cv.THRESH_BINARY_INV)
 
-    ## (2) Morph-op to remove noise
+    ## Morph-op to remove noise
     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (11, 11))
     morphed = cv.morphologyEx(threshed, cv.MORPH_CLOSE, kernel)
 
-    ## (3) Find the max-area contour
+    ## Find the external contour
     cnts = cv.findContours(morphed, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[-2]
     cnts_flat = cnts[0]
     for contour in cnts[1:]:
         cnts_flat = np.append(cnts_flat, contour, axis=0)
-    # cnt = sorted(cnts, key=cv.contourArea)[-1]
+    cv.drawContours(img, cnts_flat, -1, (0, 255, 0), 4)
+    # cv.imshow('image',img)
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
 
-    # cv.drawContours(gray, cnts_flat, -1, (0, 0, 255), 10)
-    # plt.imshow(gray)
-    # plt.show()
-    ## (4) Crop and save it
+    ## (4) Crop the image and keep the bounding Rectangle verticles
     x, y, w, h = cv.boundingRect(cnts_flat)
-    dst = img[y:y + h, x:x + w]
-    bb = np.array([[x, y],
-                   [x + w, y],
-                   [x + w, y + h],
-                   [x + w, y]])
-    # bb = np.array([[1050, 60],
-    #                 [1267, 60],
-    #                 [1267, 622],
-    #                 [1050, 622]])
-    return dst, bb
+    cropped_img = img[y:y + h, x:x + w]
+    bounding_rectangle_vertices = np.array([[x, y],
+                                            [x + w, y],
+                                            [x + w, y + h],
+                                            [x + w, y]])
+
+    return cropped_img, bounding_rectangle_vertices
 
 
+# get starting pixel of the up and down bounding lines
 def get_boundline_start_updown(start, end, img, dir):
     if (dir == 'u'):
         row_range = range(img.shape[0])
@@ -98,6 +100,7 @@ def get_boundline_start_updown(start, end, img, dir):
     return 0, 0
 
 
+# get starting pixel of the left and right bounding lines
 def get_boundline_start_leftright(start, end, img, dir):
     if (dir == 'l'):
         col_range = range(img.shape[1])
@@ -113,8 +116,8 @@ def get_boundline_start_leftright(start, end, img, dir):
 
 
 # Draw bounding edges around creating a cross extending the maze external contour
-# Using this cross we avoid "wrong" solutions passing outside the maze (You shall not pass!)
-def draw_boundline(start, end, img):
+# Using this cross we try to avoid "wrong" solutions passing outside the maze (You shall not pass!)
+def draw_boundline_cross(start, end, img):
     if abs(start[1] - end[1]) > img.shape[1] * 0.02:
         upper_line_start = get_boundline_start_updown(start, end, img, 'u')
         lower_line_start = get_boundline_start_updown(start, end, img, 'd')
@@ -131,39 +134,42 @@ def draw_boundline(start, end, img):
             img[right_line_start[0]][col] = 255
 
 
+# Check if this pixel is close to a wall , and in which direction it's closest
 def is_near_wall(pixel, edges, d, dir):
     M, N = edges.shape
-    if (dir == 'r'):
+
+    # Choose range we will look for walls in based on direction of movement
+    if dir == 'r':
         ranges = (-d, d, 0, d)
-    elif (dir == 'l'):
+    elif dir == 'l':
         ranges = (-d, d, -d, 0)
-    elif (dir == 'd'):
+    elif dir == 'd':
         ranges = (0, d, -d, d)
     else:
         ranges = (-d, 0, -d, d)
 
-    # for r in range(d,2,-2):
     wallSurrounding = False
     for i in range(ranges[0], ranges[1]):
         for j in range(ranges[2], ranges[3]):
             x = pixel.X + i
             y = pixel.Y + j
+
+            # Check if this is a wall pixel
             if x < M and y < N and edges[x][y] > 200:
                 wallSurrounding = True
                 break
         if wallSurrounding:
             break
-        # if not wallSurrounding:
-        #     Pixel.d = r
-        #     break
 
     return wallSurrounding
 
 
-def is_end(pixel, end):
-    return pixel.X == end[0] and pixel.Y == end[1]
+# Check if pixel is maze end, end is considered any pixel in the close environment of the input end pixel
+def is_end(pixel, end, maze_size):
+    return (abs(pixel.X - end[0]) < (maze_size[0] * 0.005)) and (abs(pixel.Y - end[1]) < (maze_size[1] * 0.005))
 
 
+# get direction of solution line movement
 def get_dir(curr, neighbor):
     if curr.X > neighbor.X:
         dir = 'u'
@@ -176,16 +182,17 @@ def get_dir(curr, neighbor):
     return dir
 
 
+# get the relation between sizes pre and post resize, in order to calculate new points coordinates
 def get_resize_relations(size_old, size_new):
-    sizeX_new = size_new[0]
-    sizeY_new = size_new[1]
-    sizeX_old = size_old[0]
-    sizeY_old = size_old[1]
+    size_x_new = size_new[0]
+    size_y_new = size_new[1]
+    size_x_old = size_old[0]
+    size_y_old = size_old[1]
 
-    Rx = sizeX_new / sizeX_old
-    Ry = sizeY_new / sizeY_old
+    r_x = size_x_new / size_x_old
+    r_y = size_y_new / size_y_old
 
-    return Rx, Ry
+    return r_x, r_y
 
 
 # calculate new coordinates of (x,y) after resizing an image
@@ -193,9 +200,10 @@ def get_new_coords_by_relations(x, y, Rx, Ry):
     return round(Rx * x), round(Ry * y)
 
 
-def get_new_coords_after_crop(bb, x, y):
-    delta_x = bb[0][1]
-    delta_y = bb[0][0]
+# calculate new coordinates of point after cropping the maze image, based on the difference of size
+def get_new_coords_after_crop(bound_rect_vertices, x, y):
+    delta_x = bound_rect_vertices[0][1]  # row of left upper corner of crop section
+    delta_y = bound_rect_vertices[0][0]  # col of left upper corner of crop section
     x_new = x - delta_x
     y_new = y - delta_y
 
@@ -206,6 +214,7 @@ def is_wall(pixel, edges):
     return edges[pixel.X][pixel.Y] > 200
 
 
+# Find direction of closest wall for centering the drawing line
 def checkCloseSideUpDown(curr, edges):
     for i in range(Pixel.d, 2 * Pixel.d):
         down = curr.X + i >= edges.shape[0] or edges[curr.X + i][curr.Y] > 200
@@ -219,6 +228,7 @@ def checkCloseSideUpDown(curr, edges):
     return 's'
 
 
+# Find direction of closest wall for centering the drawing line
 def checkCloseSideLeftRight(curr, edges):
     for i in range(Pixel.d, 2 * Pixel.d):
         right = curr.Y + i >= edges.shape[1] or edges[curr.X][curr.Y + i] > 200
@@ -233,6 +243,7 @@ def checkCloseSideLeftRight(curr, edges):
     return 's'
 
 
+# Get the range of sizes we try to resize the maze to before solving, based on original size
 def get_solve_size_range(img):
     new_size_x = img.shape[0]
     new_size_y = img.shape[1]
@@ -246,6 +257,7 @@ def get_solve_size_range(img):
     return 1
 
 
+# Get the new size of the maze we are going to solve based on the resize relation
 def get_solve_size(img, resize):
     new_size_x = img.shape[0]
     new_size_y = img.shape[1]
@@ -254,12 +266,14 @@ def get_solve_size(img, resize):
     return new_size_x, new_size_y
 
 
+# Prepare maze for next solving attempt by reseting all info of pixels we saw
 def restartMaze(seen):
     for pixel in seen:
         pixel.visited = 0
         pixel.prev = None
 
 
+# Try to solve the maze using BFS
 def solve_maze():
     seen = []
     q = queue.Queue()
@@ -274,30 +288,21 @@ def solve_maze():
 
         for r, c in neighbors:
             if (r < N and r >= 0 and c < M and c >= 0):
-                if (is_end(maze[r][c], solving_end)):
+                # if a neighbor is the end pixel, we have solved the maze!
+                if (is_end(maze[r][c], solving_end, edges.shape)):
                     maze[r][c].visited = 1
                     maze[r][c].prev = curr
-                    return True, seen
+                    return True, seen, (maze[r][c].X, maze[r][c].Y)
 
+                # If this neighbor is not a wall, add it to the queue
                 elif (maze[r][c].visited == 0 and not is_near_wall(maze[r][c], edges, Pixel.d,
                                                                    get_dir(curr, maze[r][c]))):
                     seen.append(maze[r][c])
                     q.put(maze[r][c])
                     maze[r][c].visited = 1
                     maze[r][c].prev = curr
-    return False, seen
 
-
-def draw_on_original_image(bb, original_image, resized_image):
-    left = bb[0][0]
-    up = bb[0][1]
-    line_array = np.array([0, 0, 255])
-    # original_colored_image[up:down, left:right] = drawed_resized_image
-    r, c = resized_image.shape[:-1]
-    for i in range(r):
-        for j in range(c):
-            if np.array_equal(line_array, resized_image[i, j, :]):
-                original_image[up + i, left + j, :] = line_array
+    return False, seen, None
 
 
 # use solution on the resized cropped image to draw solution line on original image
@@ -305,8 +310,8 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
     curr = end
     left = bb[0][0]
     up = bb[0][1]
-    lastUD = 'u'
-    lastLR = 'r'
+    last_u_d = 'u'
+    last_l_r = 'r'
 
     while (curr.prev != None):
         prev = curr.prev
@@ -317,17 +322,17 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
 
         if dir == 'u' or dir == 'd':
             draw_range = round(Pixel.draw_line_size[Pixel.d] * Ry)
-            closerTo = checkCloseSideLeftRight(curr, edges)
-            if (closerTo == 's' and lastLR == 'l') or closerTo == 'l':
-                lastLR = 'l'
+            closer_to = checkCloseSideLeftRight(curr, edges)
+            if (closer_to == 's' and last_l_r == 'l') or closer_to == 'l':
+                last_l_r = 'l'
                 for j in range(draw_range):
                     if j + original_image_coords[1] < original_image.shape[1]:
                         original_image[original_image_coords[0], original_image_coords[1] + j, :2] = 0
                         original_image[original_image_coords[0], original_image_coords[1] + j, 2] = 255
                     else:
                         break
-            elif (closerTo == 's' and lastLR == 'r') or closerTo == 'r':
-                lastLR = 'r'
+            elif (closer_to == 's' and last_l_r == 'r') or closer_to == 'r':
+                last_l_r = 'r'
                 for j in range(draw_range):
                     if original_image_coords[1] - j >= 0:
                         original_image[original_image_coords[0], original_image_coords[1] - j, :2] = 0
@@ -335,7 +340,7 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                     else:
                         break
             else:
-                lastLR = 'e'
+                last_l_r = 'e'
                 for j in range(draw_range // 2):
                     if original_image_coords[1] - j >= 0:
                         original_image[original_image_coords[0], original_image_coords[1] - j, :2] = 0
@@ -346,9 +351,9 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
 
         else:
             draw_range = round(Pixel.draw_line_size[Pixel.d] * Rx)
-            closerTo = checkCloseSideUpDown(curr, edges)
-            if (closerTo == 's' and lastUD == 'u') or closerTo == 'u':
-                lastUD = 'u'
+            closer_to = checkCloseSideUpDown(curr, edges)
+            if (closer_to == 's' and last_u_d == 'u') or closer_to == 'u':
+                last_u_d = 'u'
                 for j in range(draw_range):
                     if original_image_coords[0] + j < original_image.shape[0]:
                         original_image[original_image_coords[0] + j, original_image_coords[1], :2] = 0
@@ -356,8 +361,8 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                     else:
                         break
 
-            elif (closerTo == 's' and lastUD == 'd') or closerTo == 'd':
-                lastUD = 'd'
+            elif (closer_to == 's' and last_u_d == 'd') or closer_to == 'd':
+                last_u_d = 'd'
                 for j in range(draw_range):
                     if original_image_coords[0] - j >= 0:
                         original_image[original_image_coords[0] - j, original_image_coords[1], :2] = 0
@@ -365,7 +370,7 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
                     else:
                         break
             else:
-                lastUD = 'e'
+                last_u_d = 'e'
                 for j in range(draw_range // 2):
                     if original_image_coords[0] - j >= 0:
                         original_image[original_image_coords[0] - j, original_image_coords[1], :2] = 0
@@ -376,10 +381,9 @@ def draw_solution_on_original_image(original_image, end, edges, bb, Rx, Ry):
 
         curr = curr.prev
 
-    ########## main ##########
 
-
-# Check that input start and end points were not in the background, and lost in the crop process
+# Check that input start and end points were in the maze (not cropped)
+# If input points are outside the maze we will return a Fail message to the UI program to display to the user
 def check_input_points_after_crop(end_after_crop, start_after_crop, size_after_crop):
     for i in range(2):
         if (end_after_crop[i] < 0 or end_after_crop[i] >= size_after_crop[i] or start_after_crop[i] < 0 or
@@ -389,51 +393,80 @@ def check_input_points_after_crop(end_after_crop, start_after_crop, size_after_c
 
 
 if __name__ == "__main__":
+    # Procces input params
     start_param, end_param, image_path_param, ui_image_size_param, maze_name = proccess_params(sys.argv[1:])
+
+    # Read maze image based on input path
     original_colored_image = cv.imread(image_path_param)
     if original_colored_image is None:
         print("*Failed2*")  # Failed due to invalid image file path
         exit(0)
+
+    # calculate actual start and end coordinates based on relation between the UI maze size and the original size
     Rx_ui, Ry_ui = get_resize_relations(ui_image_size_param, original_colored_image.shape[:-1])
     original_start = get_new_coords_by_relations(start_param[0], start_param[1], Rx_ui, Ry_ui)
     original_end = get_new_coords_by_relations(end_param[0], end_param[1], Rx_ui, Ry_ui)
-    solve_flag = False
 
-    cropped_image, bb = crop_background(original_colored_image)
-    start_after_crop = get_new_coords_after_crop(bb, original_start[0], original_start[1])
-    end_after_crop = get_new_coords_after_crop(bb, original_end[0], original_end[1])
+    # Crop background of image to optimize the solving process and calculate new start and end coordinates
+    cropped_image, bounding_rect_vertices = crop_background(original_colored_image)
+    start_after_crop = get_new_coords_after_crop(bounding_rect_vertices, original_start[0], original_start[1])
+    end_after_crop = get_new_coords_after_crop(bounding_rect_vertices, original_end[0], original_end[1])
     size_after_crop = cropped_image.shape[:-1]
+
+    # Validate that the input start and end points are inside the maze, otherwise send Fail msg
     valid_start_end_points = check_input_points_after_crop(end_after_crop, start_after_crop, size_after_crop)
     if not valid_start_end_points:
         print("*Failed1*")  # points cropped error
         exit(0)
-    else:
-        start_size = get_solve_size_range(cropped_image)
-        for i in np.arange(start_size, 1.2, 0.2):
-            solve_size = get_solve_size(cropped_image, i)
-            resized_cropped_image = cv.resize(cropped_image, solve_size[::-1])
-            Rx, Ry = get_resize_relations(size_after_crop, solve_size)
-            solving_start = get_new_coords_by_relations(start_after_crop[0], start_after_crop[1], Rx, Ry)
-            solving_end = get_new_coords_by_relations(end_after_crop[0], end_after_crop[1], Rx, Ry)
-            gray_image = cv.cvtColor(resized_cropped_image, cv.COLOR_BGR2GRAY)
-            edges = cv.Canny(gray_image, 100, 200)
-            draw_boundline(solving_start, solving_end, edges)
-            maze = init_maze(gray_image)
-            N, M = edges.shape
-            for d in Pixel.ds:
-                Pixel.d = d
-                found, seen = solve_maze()
-                if found:
-                    solve_flag = True
-                    break
-                else:
-                    restartMaze(seen)
-            if solve_flag:
-                end_pixel = maze[solving_end[0]][solving_end[1]]
-                draw_solution_on_original_image(original_colored_image, end_pixel, edges, bb, 1 / Rx, 1 / Ry)
-                solution_name = display_image(original_colored_image, maze_name)
-                print(f"*{solution_name}*")
-                exit(0)
 
-        if not solve_flag:
-            print("*Failed to solve maze*")
+    # Begin solving attemps!
+    solve_flag = False
+    start_size = get_solve_size_range(cropped_image)
+    for i in np.arange(start_size, 1.2, 0.2):
+        #  Compress the maze img for quicker solving
+        solve_size = get_solve_size(cropped_image, i)
+        resized_cropped_image = cv.resize(cropped_image, solve_size[::-1])
+        Rx, Ry = get_resize_relations(size_after_crop, solve_size)
+        solving_start = get_new_coords_by_relations(start_after_crop[0], start_after_crop[1], Rx, Ry)
+        solving_end = get_new_coords_by_relations(end_after_crop[0], end_after_crop[1], Rx, Ry)
+
+        # Perform edge detection with the Canny algorithm for wall detection
+        gray_image = cv.cvtColor(resized_cropped_image, cv.COLOR_BGR2GRAY)
+        edges = cv.Canny(gray_image, 100, 200)
+        cv.imshow("image",edges)
+        cv.waitKey(0)
+
+
+
+        # Add bound line cross to avoid "illegal" solutions outside the maze
+        draw_boundline_cross(solving_start, solving_end, edges)
+
+        cv.imshow('image', edges)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+
+        maze = init_maze(gray_image)
+        N, M = edges.shape
+        # Attempt solving with decreasing distances from walls (For a nicer looking solution not to close to wall)
+        for distance in Pixel.ds:
+            Pixel.d = distance
+            found, seen, solved_end = solve_maze()
+            if found:
+                # Maze solved, get actual end finish
+                solve_flag = True
+                solving_end = solved_end
+                break
+            else:
+                # Restart attempt info before next attempt
+                restartMaze(seen)
+
+        # Maze was successfully solved
+        if solve_flag:
+            end_pixel = maze[solving_end[0]][solving_end[1]]
+            draw_solution_on_original_image(original_colored_image, end_pixel, edges, bounding_rect_vertices, 1 / Rx, 1 / Ry)
+            solution_name = save_solution_img(original_colored_image, maze_name)
+            print(f"*{solution_name}*")
+            exit(0)
+
+    if not solve_flag:
+        print("*Failed to solve maze*")

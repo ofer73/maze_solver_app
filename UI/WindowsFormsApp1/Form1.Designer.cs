@@ -32,7 +32,7 @@ namespace WindowsFormsApp1
         private void InitializeComponent()
         {
             this.upload_button = new System.Windows.Forms.Button();
-            this.Image1 = new System.Windows.Forms.PictureBox();
+            this.MazeImg = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.startVal = new System.Windows.Forms.Label();
             this.endVal = new System.Windows.Forms.Label();
@@ -44,7 +44,7 @@ namespace WindowsFormsApp1
             this.label2 = new System.Windows.Forms.Label();
             this.sizeTest = new System.Windows.Forms.Button();
             this.solvedFlag = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.Image1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MazeImg)).BeginInit();
             this.SuspendLayout();
             // 
             // upload_button
@@ -61,17 +61,17 @@ namespace WindowsFormsApp1
             this.upload_button.UseVisualStyleBackColor = true;
             this.upload_button.Click += new System.EventHandler(this.uploadButtonClick);
             // 
-            // Image1
+            // MazeImg
             // 
-            this.Image1.AccessibleName = "Image";
-            this.Image1.Location = new System.Drawing.Point(16, 10);
-            this.Image1.Margin = new System.Windows.Forms.Padding(4);
-            this.Image1.Name = "Image1";
-            this.Image1.Size = new System.Drawing.Size(1441, 702);
-            this.Image1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.Image1.TabIndex = 2;
-            this.Image1.TabStop = false;
-            this.Image1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Image1_DoubleClick);
+            this.MazeImg.AccessibleName = "Image";
+            this.MazeImg.Location = new System.Drawing.Point(16, 10);
+            this.MazeImg.Margin = new System.Windows.Forms.Padding(4);
+            this.MazeImg.Name = "MazeImg";
+            this.MazeImg.Size = new System.Drawing.Size(1441, 702);
+            this.MazeImg.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.MazeImg.TabIndex = 2;
+            this.MazeImg.TabStop = false;
+            this.MazeImg.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MazeImg_DoubleClick);
             // 
             // label1
             // 
@@ -167,7 +167,7 @@ namespace WindowsFormsApp1
             this.solve_maze_button.TabIndex = 13;
             this.solve_maze_button.Text = "Solve my Maze!";
             this.solve_maze_button.UseVisualStyleBackColor = false;
-            this.solve_maze_button.MouseDown += new System.Windows.Forms.MouseEventHandler(this.maze_solve_button_MouseDown);
+            this.solve_maze_button.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MazeSolveButtonMouseDown);
             // 
             // label2
             // 
@@ -181,7 +181,6 @@ namespace WindowsFormsApp1
             this.label2.Size = new System.Drawing.Size(683, 24);
             this.label2.TabIndex = 14;
             this.label2.Text = "IMPORTANT! please choose 2 points Inside the maze! (not background)";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // sizeTest
             // 
@@ -191,6 +190,7 @@ namespace WindowsFormsApp1
             this.sizeTest.TabIndex = 15;
             this.sizeTest.Text = "sizeTest";
             this.sizeTest.UseVisualStyleBackColor = true;
+            this.sizeTest.Visible = false;
             this.sizeTest.Click += new System.EventHandler(this.sizeTest_Click);
             // 
             // solvedFlag
@@ -219,14 +219,13 @@ namespace WindowsFormsApp1
             this.Controls.Add(this.endVal);
             this.Controls.Add(this.startVal);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.Image1);
+            this.Controls.Add(this.MazeImg);
             this.Controls.Add(this.upload_button);
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Maze Solver";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.Image1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MazeImg)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -234,7 +233,7 @@ namespace WindowsFormsApp1
 
         #endregion
         private System.Windows.Forms.Button upload_button;
-        private System.Windows.Forms.PictureBox Image1;
+        private System.Windows.Forms.PictureBox MazeImg;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label startVal;
         private System.Windows.Forms.Label endVal;

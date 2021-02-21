@@ -35,11 +35,9 @@ namespace WindowsFormsApp1
             try
             {
                 OpenFileDialog dialog = new OpenFileDialog();
-                dialog.Filter = "jpg files (*.jpg)|*.jpg|jpeg files (*.jpeg)|*.jpeg| PNG files |*.png| All Files(*.*)|*.*";
+                dialog.Filter = "jpg files (*.jpg)|*.jpg|jpeg files (*.jpeg)|*.jpeg|png files (*.png)|*.png| All Files(*.*)|*.*";
 
-                
-
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     var fileName = dialog.FileName;
                     if(fileName.EndsWith(".jpg") || fileName.EndsWith(".jpeg") || fileName.EndsWith(".png"))
@@ -47,7 +45,7 @@ namespace WindowsFormsApp1
                         pictureBoxEndPoint = (-1, -1);
                         pictureBoxStartPoint = (-1, -1);
                         imgLocation = dialog.FileName;
-                        Image1.ImageLocation = imgLocation;
+                        MazeImg.ImageLocation = imgLocation;
                         startVal.Text = "";
                         endVal.Text = "";
                     }
@@ -63,17 +61,17 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void Image1_DoubleClick(object sender, MouseEventArgs e)
+        private void MazeImg_DoubleClick(object sender, MouseEventArgs e)
         {
-            if (Image1.Image != null)
+            if (MazeImg.Image != null)
             {
-                _pictureBoxGraphics = Image1.CreateGraphics();
-                var b = Image1;
-                int x = b.Width * e.X / Image1.Width;
-                int y = b.Height * e.Y / Image1.Height;
+                _pictureBoxGraphics = MazeImg.CreateGraphics();
+                var b = MazeImg;
+                int x = b.Width * e.X / MazeImg.Width;
+                int y = b.Height * e.Y / MazeImg.Height;
                 var Size = getNewImageSize();
-                x -= ((Image1.Width - Size.Width) / 2); // decrease the gap between imagebox and the actual image
-                y -= ((Image1.Height - Size.Height) / 2);
+                x -= ((MazeImg.Width - Size.Width) / 2); // decrease the gap between imagebox and the actual image
+                y -= ((MazeImg.Height - Size.Height) / 2);
 
                 if (!end_point_radio.Checked && !start_point_radio.Checked)
                     MessageBox.Show(String.Format("X={0}, Y={1}, please choose start or end point to update one of them", x, y));
@@ -81,7 +79,7 @@ namespace WindowsFormsApp1
                 {
                     startVal.Text = String.Format("({0},{1})", x, y);
                     pictureBoxStartPoint = (e.X, e.Y);
-                    Image1.Refresh();
+                    MazeImg.Refresh();
                     if(pictureBoxEndPoint.Item1 >-1 && pictureBoxEndPoint.Item2 > -1)
                     {
                         _pictureBoxGraphics.DrawEllipse(_endPen, pictureBoxEndPoint.Item1-5, pictureBoxEndPoint.Item2-5, 6, 6);
@@ -95,7 +93,7 @@ namespace WindowsFormsApp1
                 {
                     endVal.Text = String.Format("({0},{1})", x, y);
                     pictureBoxEndPoint = (e.X, e.Y);
-                    Image1.Refresh();
+                    MazeImg.Refresh();
                     if (pictureBoxStartPoint.Item1 > -1 && pictureBoxStartPoint.Item2 > -1)
                     {
                         _pictureBoxGraphics.DrawEllipse(_startPen, pictureBoxStartPoint.Item1-5, pictureBoxStartPoint.Item2-5, 6, 6);
@@ -113,13 +111,13 @@ namespace WindowsFormsApp1
 
         }
 
-        private void maze_solve_button_MouseDown(object sender, MouseEventArgs e)
+        private void MazeSolveButtonMouseDown(object sender, MouseEventArgs e)
         {
-            if (startVal.Text.Length > 0 && endVal.Text.Length > 0 && Image1.Image != null)
+            if (startVal.Text.Length > 0 && endVal.Text.Length > 0 && MazeImg.Image != null)
             {
                 if(solvedFlag.Text == "0")
                 {
-                    if (MessageBox.Show("Please approve installing requirement modules for your default python interpeter\nOpenCV,numpy (See requirements.txt for specific versions)", "Maze Solver",
+                    if (MessageBox.Show("Please approve installing requirement modules for your default python interpeter\nOpenCV,numpy... (See requirements.txt for specifics)", "Maze Solver",
                     MessageBoxButtons.YesNo) == DialogResult.Yes)
                     {
                         runInstallRequirements();
@@ -136,12 +134,12 @@ namespace WindowsFormsApp1
                 var end = endVal.Text.Substring(1, endVal.Text.Length - 2);
                 var filppedStart = string.Join(",", start.Split(',').Reverse());
                 var filppedEnd = string.Join(",", end.Split(',').Reverse());
-                var imagePath = Image1.ImageLocation;
+                var imagePath = MazeImg.ImageLocation;
                 var imageNewSize = getNewImageSize();
                 var sizeParam = $"{imageNewSize.Height},{imageNewSize.Width}";
 
+                // Run Solving python script
                 var solveCommand = $"python solve_maze.py {filppedStart} {filppedEnd} {imagePath} {sizeParam}";
-
                 var result = runMazeSolver(solveCommand);
 
                 if (string.IsNullOrEmpty(result) || result.StartsWith("Failed"))
@@ -158,7 +156,6 @@ namespace WindowsFormsApp1
                     {
                         MessageBox.Show("Solving the maze Failed!");
                     }
-
                 }
                 else
                 {
@@ -167,10 +164,8 @@ namespace WindowsFormsApp1
                     {
                     }
                 }
-                
-
             }
-            else if (Image1.Image != null)
+            else if (MazeImg.Image != null)
             {
                 MessageBox.Show("You Must enter Start and End Points before solving the maze!");
             }
@@ -182,7 +177,7 @@ namespace WindowsFormsApp1
 
         private void imageSize_Click(object sender, EventArgs e)
         {
-            if (Image1.Image == null)
+            if (MazeImg.Image == null)
                 MessageBox.Show("no image cuurently uploade");
             else
             {
@@ -191,43 +186,18 @@ namespace WindowsFormsApp1
             }
         }
 
-        private Size getNewImageSize() // get the size of the actual image on the picture box (zoom mode maintains ratio of original image)
+        // get the size of the actual image on the picture box (zoom mode maintains ratio of original image)
+        private Size getNewImageSize() 
         {
-            var img = Image1.Image;
-            var wfactor = (double)img.Width / Image1.Width;
-            var hfactor = (double)img.Height / Image1.Height;
+            var img = MazeImg.Image;
+            var wfactor = (double)img.Width / MazeImg.Width;
+            var hfactor = (double)img.Height / MazeImg.Height;
 
             var resizeFactor = Math.Max(wfactor, hfactor);
             var imageSize = new Size((int)(img.Width / resizeFactor), (int)(img.Height / resizeFactor));
             return imageSize;
         }
 
-        private static void RunCommands(List<string> cmds)
-        {
-            var process = new Process();
-            var psi = new ProcessStartInfo();
-            psi.FileName = "cmd.exe";
-            psi.RedirectStandardInput = true;
-            psi.RedirectStandardOutput = true;
-            psi.RedirectStandardError = true;
-            psi.UseShellExecute = false;
-            psi.WorkingDirectory = getMainDirectoryPath();
-            process.StartInfo = psi;
-            process.Start();
-            process.OutputDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
-            process.ErrorDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            using (StreamWriter sw = process.StandardInput)
-            {
-                foreach (var cmd in cmds)
-                {
-                    sw.WriteLine(cmd);
-                }
-            }
-            process.WaitForExit();
-        }
         private static void runInstallRequirements()
         {
             var command = "pip install -r requirements.txt";
@@ -246,13 +216,13 @@ namespace WindowsFormsApp1
                 procces.WaitForExit();
             }
         }
+
         private static string runMazeSolver(string command)
         {
-            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            var startInfo = new ProcessStartInfo();
             startInfo.WorkingDirectory = getMainDirectoryPath();
             startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
             startInfo.FileName = "cmd.exe";
-            //startInfo.Arguments = command;
             startInfo.UseShellExecute = false;
             //startInfo.CreateNoWindow = true;
             startInfo.RedirectStandardInput = true;
@@ -272,14 +242,17 @@ namespace WindowsFormsApp1
                 errors = procces.StandardError.ReadToEnd();
                 output = procces.StandardOutput.ReadToEnd();
             }
+
+            // Parse output to find results of solving process
             var getOutSplit = output.Split('*');
             if (getOutSplit.Length > 2)
             {
                 return getOutSplit[1];
             }
+
             Console.WriteLine("Errors ; ");
             Console.WriteLine(errors);
-            return "";
+            return string.Empty;
         }
 
         private static string getMainDirectoryPath()
@@ -290,20 +263,9 @@ namespace WindowsFormsApp1
             return homeDir;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
         private void sizeTest_Click(object sender, EventArgs e)
         {
-            if (Image1.Image != null)
+            if (MazeImg.Image != null)
             {
                 var size = getNewImageSize();
                 MessageBox.Show($"Height: {size.Height} Width: {size.Width}");
