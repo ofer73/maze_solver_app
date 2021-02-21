@@ -37,12 +37,24 @@ namespace WindowsFormsApp1
                 OpenFileDialog dialog = new OpenFileDialog();
                 dialog.Filter = "jpg files (*.jpg)|*.jpg|jpeg files (*.jpeg)|*.jpeg| PNG files |*.png| All Files(*.*)|*.*";
 
+                
+
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    imgLocation = dialog.FileName;
-                    Image1.ImageLocation = imgLocation;
-                    startVal.Text = "";
-                    endVal.Text = "";
+                    var fileName = dialog.FileName;
+                    if(fileName.EndsWith(".jpg") || fileName.EndsWith(".jpeg") || fileName.EndsWith(".png"))
+                    {
+                        pictureBoxEndPoint = (-1, -1);
+                        pictureBoxStartPoint = (-1, -1);
+                        imgLocation = dialog.FileName;
+                        Image1.ImageLocation = imgLocation;
+                        startVal.Text = "";
+                        endVal.Text = "";
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid Image\nPlease upload only in jpg/jpeg/png format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
             catch
@@ -72,11 +84,11 @@ namespace WindowsFormsApp1
                     Image1.Refresh();
                     if(pictureBoxEndPoint.Item1 >-1 && pictureBoxEndPoint.Item2 > -1)
                     {
-                        _pictureBoxGraphics.DrawEllipse(_endPen, pictureBoxEndPoint.Item1, pictureBoxEndPoint.Item2, 8, 8);
-                        _pictureBoxGraphics.FillEllipse(_endBrush, pictureBoxEndPoint.Item1, pictureBoxEndPoint.Item2, 8, 8);
+                        _pictureBoxGraphics.DrawEllipse(_endPen, pictureBoxEndPoint.Item1-5, pictureBoxEndPoint.Item2-5, 6, 6);
+                        _pictureBoxGraphics.FillEllipse(_endBrush, pictureBoxEndPoint.Item1-5, pictureBoxEndPoint.Item2-5, 6, 6);
                     }
-                    _pictureBoxGraphics.DrawEllipse(_startPen, e.X, e.Y, 8, 8);
-                    _pictureBoxGraphics.FillEllipse(_startBrush, e.X, e.Y, 8, 8);
+                    _pictureBoxGraphics.DrawEllipse(_startPen, e.X-5, e.Y-5, 6, 6);
+                    _pictureBoxGraphics.FillEllipse(_startBrush, e.X-5, e.Y-5, 6, 6);
 
                 }
                 else
@@ -86,12 +98,12 @@ namespace WindowsFormsApp1
                     Image1.Refresh();
                     if (pictureBoxStartPoint.Item1 > -1 && pictureBoxStartPoint.Item2 > -1)
                     {
-                        _pictureBoxGraphics.DrawEllipse(_startPen, pictureBoxStartPoint.Item1, pictureBoxStartPoint.Item2, 8, 8);
-                        _pictureBoxGraphics.FillEllipse(_startBrush, pictureBoxStartPoint.Item1, pictureBoxStartPoint.Item2, 8, 8);
+                        _pictureBoxGraphics.DrawEllipse(_startPen, pictureBoxStartPoint.Item1-5, pictureBoxStartPoint.Item2-5, 6, 6);
+                        _pictureBoxGraphics.FillEllipse(_startBrush, pictureBoxStartPoint.Item1-5, pictureBoxStartPoint.Item2-5, 6, 6);
 
                     }
-                    _pictureBoxGraphics.DrawEllipse(_endPen, e.X, e.Y, 8, 8);
-                    _pictureBoxGraphics.FillEllipse(_endBrush, e.X, e.Y, 8, 8);
+                    _pictureBoxGraphics.DrawEllipse(_endPen, e.X-5, e.Y - 5, 6, 6);
+                    _pictureBoxGraphics.FillEllipse(_endBrush, e.X-5, e.Y - 5, 6, 6);
                 }
             }
             else
@@ -107,8 +119,16 @@ namespace WindowsFormsApp1
             {
                 if(solvedFlag.Text == "0")
                 {
-                    runInstallRequirements();
-                    solvedFlag.Text = "1";
+                    if (MessageBox.Show("Please approve installing requirement modules for your default python interpeter\nOpenCV,numpy (See requirements.txt for specific versions)", "Maze Solver",
+                    MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        runInstallRequirements();
+                        solvedFlag.Text = "1";
+                    }
+                    else
+                    {
+                        MessageBox.Show("Solving may Fail due to missing packages!");
+                    }
                 }
 
                 //Proccess args
@@ -123,21 +143,29 @@ namespace WindowsFormsApp1
                 var solveCommand = $"python solve_maze.py {filppedStart} {filppedEnd} {imagePath} {sizeParam}";
 
                 var result = runMazeSolver(solveCommand);
-               
+
                 if (string.IsNullOrEmpty(result) || result.StartsWith("Failed"))
                 {
-                    if (result.Last() == '1')
+                    if (result.EndsWith("1"))
                     {
                         MessageBox.Show("Solving the maze Failed because start or end points were not inside the maze \n please choose new points!");
+                    }
+                    else if (result.EndsWith("2"))
+                    {
+                        MessageBox.Show("Solving the maze Failed - unable to open image\n(name could be invalid, please do not uses Whitespace)");
                     }
                     else
                     {
                         MessageBox.Show("Solving the maze Failed!");
                     }
+
                 }
                 else
                 {
-                    Process.Start($"{getMainDirectoryPath()}\\mazes\\tmp_solved\\{result}");
+                    solvedFlag.Text = "1";
+                    using (var process = Process.Start($"{getMainDirectoryPath()}\\mazes\\tmp_solved\\{result}"))
+                    {
+                    }
                 }
                 
 
