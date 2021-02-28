@@ -16,14 +16,15 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-        private Graphics _pictureBoxGraphics ;
+        private Graphics _pictureBoxGraphics;
         private Pen _startPen = new Pen(Color.Red);
         private Pen _endPen = new Pen(Color.Blue);
         private Brush _startBrush = new SolidBrush(Color.Red);
         private Brush _endBrush = new SolidBrush(Color.Blue);
         private string imgLocation;
-        private (int, int) pictureBoxStartPoint = (-1,-1);
-        private (int, int) pictureBoxEndPoint = (-1,-1);
+        private (int, int) pictureBoxStartPoint = (-1, -1);
+        private (int, int) pictureBoxEndPoint = (-1, -1);
+        private readonly List<string> _supportedImageFormats = new List<string> {".jpg",".jpeg",".png"};
 
         public Form1()
         {
@@ -40,7 +41,7 @@ namespace WindowsFormsApp1
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     var fileName = dialog.FileName;
-                    if(fileName.EndsWith(".jpg") || fileName.EndsWith(".jpeg") || fileName.EndsWith(".png"))
+                    if(_supportedImageFormats.Any(fileSuffix => fileName.EndsWith(fileSuffix)) && !fileName.Contains(';'))
                     {
                         pictureBoxEndPoint = (-1, -1);
                         pictureBoxStartPoint = (-1, -1);
@@ -51,7 +52,14 @@ namespace WindowsFormsApp1
                     }
                     else
                     {
-                        MessageBox.Show("Invalid Image\nPlease upload only in jpg/jpeg/png format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (fileName.Contains(';'))
+                        {
+                            MessageBox.Show("Invalid File Path\nPath must not contain SemiColon!(;)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid Image\nPlease upload only in jpg/jpeg/png format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                 }
             }
@@ -137,9 +145,10 @@ namespace WindowsFormsApp1
                 var imagePath = MazeImg.ImageLocation;
                 var imageNewSize = getNewImageSize();
                 var sizeParam = $"{imageNewSize.Height},{imageNewSize.Width}";
+                var replacedImagePath = imagePath.Replace(" ", ";");    // Replace whitespace with semi colon for valid params read
 
                 // Run Solving python script
-                var solveCommand = $"python solve_maze.py {filppedStart} {filppedEnd} {imagePath} {sizeParam}";
+                var solveCommand = $"python solve_maze.py {filppedStart} {filppedEnd} {replacedImagePath} {sizeParam}";
                 var result = runMazeSolver(solveCommand);
 
                 if (string.IsNullOrEmpty(result) || result.StartsWith("Failed"))

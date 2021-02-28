@@ -16,6 +16,7 @@ class Pixel:
         self.visited = visited
         self.prev = prev
 
+
 # Initialize maze as board of Pixel objects
 def init_maze(img):
     maze = [[0 for i in range(edges.shape[1])] for j in range(edges.shape[0])]
@@ -44,6 +45,10 @@ def save_solution_img(img, maze_name):
 
 # Process input parameters of : start_point , end_point, maze_file_path, maze_size
 def proccess_params(args):
+    # Restore Original params (replaced " " with ";" in UI)
+    for i in range(len(args)):
+        args[i] = args[i].replace(";", " ")
+
     start_param = args[0]
     end_param = args[1]
     image_path = args[2]
@@ -450,7 +455,8 @@ if __name__ == "__main__":
         # Maze was successfully solved
         if solve_flag:
             end_pixel = maze[solving_end[0]][solving_end[1]]
-            draw_solution_on_original_image(original_colored_image, end_pixel, edges, bounding_rect_vertices, 1 / Rx, 1 / Ry)
+            draw_solution_on_original_image(original_colored_image, end_pixel, edges, bounding_rect_vertices, 1 / Rx,
+                                            1 / Ry)
             solution_name = save_solution_img(original_colored_image, maze_name)
             print(f"*{solution_name}*")
             exit(0)
